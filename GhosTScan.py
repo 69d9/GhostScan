@@ -43,8 +43,8 @@ def main():
     result_file = sys.argv[2]
     
     wp_list = load_file(wp_list_file)
-    usernames = load_file('username.txt')
-    passwords = load_file('password.txt')
+    usernames = load_file('usernames')
+    passwords = load_file('passwords')
     
     success_results = []
     
