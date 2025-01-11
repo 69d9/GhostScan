@@ -36,7 +36,7 @@ def upload_index(url, username, password):
 
 def main():
     if len(sys.argv) < 3:
-        print("Usage: python GhosTScan.py <wp_list> <result_file>")
+        print("Usage: python3 GhosTScan.py <wp_list> <result_file>")
         sys.exit(1)
     
     wp_list_file = sys.argv[1]
