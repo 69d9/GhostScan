@@ -64,8 +64,3 @@ def main():
         for result in success_results:
             file.write(result + "\n")
     
-    print(f"[+] Results saved to {result_file}")
-
-if __name__ == '__main__':
-    main()
-```​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​
